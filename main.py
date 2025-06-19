@@ -90,15 +90,8 @@ def cuda_malloc_warning():
         if cuda_malloc_warning:
             logging.warning("\nWARNING: this card most likely does not support cuda-malloc, if you get \"CUDA error\" please run ComfyUI with: --disable-cuda-malloc\n")
 
-def prompt_worker(q, server_instance):
-    current_time: float = 0.0
-    cache_type = execution.CacheType.CLASSIC
-    if args.cache_lru > 0:
-        cache_type = execution.CacheType.LRU
-    elif args.cache_none:
-        cache_type = execution.CacheType.DEPENDENCY_AWARE
-
-    e = execution.PromptExecutor(server_instance, cache_type=cache_type, cache_size=args.cache_lru)
+def prompt_worker(q, server):
+    e = execution.PromptExecutor(server)
     last_gc_collect = 0
     need_gc = False
     gc_collect_interval = 10.0
@@ -113,18 +106,18 @@ def prompt_worker(q, server_instance):
             item, item_id = queue_item
             execution_start_time = time.perf_counter()
             prompt_id = item[1]
-            server_instance.last_prompt_id = prompt_id
+            server.last_prompt_id = prompt_id
 
             e.execute(item[2], prompt_id, item[3], item[4])
             need_gc = True
             q.task_done(item_id,
-                        e.history_result,
+                        e.outputs_ui,
                         status=execution.PromptQueue.ExecutionStatus(
                             status_str='success' if e.success else 'error',
                             completed=e.success,
                             messages=e.status_messages))
-            if server_instance.client_id is not None:
-                server_instance.send_sync("executing", {"node": None, "prompt_id": prompt_id}, server_instance.client_id)
+            if server.client_id is not None:
+                server.send_sync("executing", { "node": None, "prompt_id": prompt_id }, server.client_id)
 
             current_time = time.perf_counter()
             execution_time = current_time - execution_start_time
@@ -146,11 +139,11 @@ def prompt_worker(q, server_instance):
         if need_gc:
             current_time = time.perf_counter()
             if (current_time - last_gc_collect) > gc_collect_interval:
+                comfy.model_management.cleanup_models()
                 gc.collect()
                 comfy.model_management.soft_empty_cache()
                 last_gc_collect = current_time
                 need_gc = False
-                hook_breaker_ac10a0.restore_functions()
 
 async def run(server, address='', port=8188, verbose=True, call_on_start=None):
     await asyncio.gather(server.start(address, port, verbose, call_on_start), server.publish_loop())
