@@ -1,5 +1,4 @@
 import importlib
-import logging
 
 import torch
 from torch import optim
@@ -24,7 +23,7 @@ def log_txt_as_img(wh, xc, size=10):
         try:
             draw.text((0, 0), lines, fill="black", font=font)
         except UnicodeEncodeError:
-            logging.warning("Cant encode string for logging. Skipping.")
+            print("Cant encode string for logging. Skipping.")
 
         txt = np.array(txt).transpose(2, 0, 1) / 127.5 - 1.0
         txts.append(txt)
@@ -66,7 +65,7 @@ def mean_flat(tensor):
 def count_params(model, verbose=False):
     total_params = sum(p.numel() for p in model.parameters())
     if verbose:
-        logging.info(f"{model.__class__.__name__} has {total_params*1.e-6:.2f} M params.")
+        print(f"{model.__class__.__name__} has {total_params*1.e-6:.2f} M params.")
     return total_params
 
 
@@ -134,6 +133,7 @@ class AdamWwithEMAandWings(optim.Optimizer):
             exp_avgs = []
             exp_avg_sqs = []
             ema_params_with_grad = []
+            state_sums = []
             max_exp_avg_sqs = []
             state_steps = []
             amsgrad = group['amsgrad']
