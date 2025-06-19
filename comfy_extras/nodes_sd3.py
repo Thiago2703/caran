@@ -9,7 +9,7 @@ import comfy_extras.nodes_slg
 class TripleCLIPLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip_name1": (folder_paths.get_filename_list("text_encoders"), ), "clip_name2": (folder_paths.get_filename_list("text_encoders"), ), "clip_name3": (folder_paths.get_filename_list("text_encoders"), )
+        return {"required": { "clip_name1": (folder_paths.get_filename_list("clip"), ), "clip_name2": (folder_paths.get_filename_list("clip"), ), "clip_name3": (folder_paths.get_filename_list("clip"), )
                              }}
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
@@ -19,9 +19,9 @@ class TripleCLIPLoader:
     DESCRIPTION = "[Recipes]\n\nsd3: clip-l, clip-g, t5"
 
     def load_clip(self, clip_name1, clip_name2, clip_name3):
-        clip_path1 = folder_paths.get_full_path_or_raise("text_encoders", clip_name1)
-        clip_path2 = folder_paths.get_full_path_or_raise("text_encoders", clip_name2)
-        clip_path3 = folder_paths.get_full_path_or_raise("text_encoders", clip_name3)
+        clip_path1 = folder_paths.get_full_path_or_raise("clip", clip_name1)
+        clip_path2 = folder_paths.get_full_path_or_raise("clip", clip_name2)
+        clip_path3 = folder_paths.get_full_path_or_raise("clip", clip_name3)
         clip = comfy.sd.load_clip(ckpt_paths=[clip_path1, clip_path2, clip_path3], embedding_directory=folder_paths.get_folder_paths("embeddings"))
         return (clip,)
 

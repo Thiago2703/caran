@@ -839,8 +839,8 @@ class CLIPLoader:
 class DualCLIPLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip_name1": (folder_paths.get_filename_list("text_encoders"), ),
-                              "clip_name2": (folder_paths.get_filename_list("text_encoders"), ),
+        return {"required": { "clip_name1": (folder_paths.get_filename_list("clip"), ),
+                              "clip_name2": (folder_paths.get_filename_list("clip"), ),
                               "type": (["sdxl", "sd3", "flux", "hunyuan_video", "hidream"], ),
                               },
                 "optional": {
@@ -856,8 +856,8 @@ class DualCLIPLoader:
     def load_clip(self, clip_name1, clip_name2, type, device="default"):
         clip_type = getattr(comfy.sd.CLIPType, type.upper(), comfy.sd.CLIPType.STABLE_DIFFUSION)
 
-        clip_path1 = folder_paths.get_full_path_or_raise("text_encoders", clip_name1)
-        clip_path2 = folder_paths.get_full_path_or_raise("text_encoders", clip_name2)
+        clip_path1 = folder_paths.get_full_path_or_raise("clip", clip_name1)
+        clip_path2 = folder_paths.get_full_path_or_raise("clip", clip_name2)
 
         model_options = {}
         if device == "cpu":
